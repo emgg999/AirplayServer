@@ -6,7 +6,6 @@ buildscript {
         maven { url 'https://maven.aliyun.com/repository/google' }
         maven { url 'https://maven.aliyun.com/repository/jcenter' } // 替代 jcenter()
         jcenter()
-        google()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:2.3.0'
@@ -22,7 +21,6 @@ allprojects {
         maven { url 'https://maven.aliyun.com/repository/google' }
         maven { url 'https://maven.aliyun.com/repository/jcenter' }
         jcenter()
-        google()
     }
 }
 
