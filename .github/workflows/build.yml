@@ -3,7 +3,15 @@ name: Build APK
 on:
   push:
     branches:
-      - main  # 或者你想要自动构建的分支
+      - master  # 或者你想要自动构建的分支
+
+  workflow_dispatch:
+    inputs:
+      name:
+        description: 'Manual trigger input'
+        required: true
+        default: 'default input'
+
 
 jobs:
   build:
