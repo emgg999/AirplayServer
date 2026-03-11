@@ -43,7 +43,7 @@ public class VideoPlayer extends Thread {
             format.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, 0); // 动态调整输入大小
             // 使用同步模式以获得更低的延迟
             mDecoder = MediaCodec.createDecoderByType("video/avc");
-            mDecoder.configure(format, surface, null, 0);
+            mDecoder.configure(format, mSurface, null, 0);
             mDecoder.start();
         } catch (Exception e) {
             e.printStackTrace();
