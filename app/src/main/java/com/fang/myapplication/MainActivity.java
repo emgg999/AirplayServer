@@ -10,7 +10,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends Activity implements View.OnClickListener {
+public class MainActivity extends Activity {
 
     public static String TAG = "MainActivity";
 
@@ -19,8 +19,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private DNSNotify mDNSNotify;
 
     private SurfaceView mSurfaceView;
-    private Button mBtnControl;
-    private TextView mTxtDevice;
     private boolean mIsStart = false;
 
     @Override
@@ -28,29 +26,17 @@ public class MainActivity extends Activity implements View.OnClickListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         getSystemService(Context.NSD_SERVICE);
-        mBtnControl = findViewById(R.id.btn_control);
-        mTxtDevice = findViewById(R.id.txt_device);
-        mBtnControl.setOnClickListener(this);
         mSurfaceView = findViewById(R.id.surface);
         mAirPlayServer = new AirPlayServer();
         mRaopServer = new RaopServer(mSurfaceView);
         mDNSNotify = new DNSNotify();
+        startServer();
+        Toast.makeText(this.getApplicationContext(), "启动服务成功", Toast.LENGTH_SHORT).show();
     }
-
     @Override
-    public void onClick(View v) {
-        if (v.getId() == R.id.btn_control) {
-            if (!mIsStart) {
-                startServer();
-                mTxtDevice.setText("设备名称:" + mDNSNotify.getDeviceName());
-            } else {
-                stopServer();
-                mTxtDevice.setText("未启动");
-            }
-            mIsStart = !mIsStart;
-            mBtnControl.setText(mIsStart ? "结束" : "开始");
-        }
-
+    protected onDestroy() {
+        super.onDestroy();
+        stopServer();
     }
 
     private void startServer() {
