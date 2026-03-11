@@ -6,7 +6,6 @@ import android.view.SurfaceView;
 
 import com.fang.myapplication.model.NALPacket;
 import com.fang.myapplication.model.PCMPacket;
-import com.fang.myapplication.player.AudioPlayer;
 import com.fang.myapplication.player.VideoPlayer;
 
 public class RaopServer implements SurfaceHolder.Callback {
@@ -17,15 +16,12 @@ public class RaopServer implements SurfaceHolder.Callback {
     }
     private static final String TAG = "RaopServer";
     private VideoPlayer mVideoPlayer;
-    private AudioPlayer mAudioPlayer;
     private SurfaceView mSurfaceView;
     private long mServerId = 0;
 
     public RaopServer(SurfaceView surfaceView) {
         mSurfaceView = surfaceView;
         mSurfaceView.getHolder().addCallback(this);
-        mAudioPlayer = new AudioPlayer();
-        mAudioPlayer.start();
     }
 
     public void onRecvVideoData(byte[] nal, int nalType, long dts, long pts) {
@@ -39,10 +35,6 @@ public class RaopServer implements SurfaceHolder.Callback {
 
     public void onRecvAudioData(short[] pcm, long pts) {
         // Log.d(TAG, "onRecvAudioData pcm length = " + pcm.length + ", pts = " + pts);
-        PCMPacket pcmPacket = new PCMPacket();
-        pcmPacket.data = pcm;
-        pcmPacket.pts = pts;
-        mAudioPlayer.addPacker(pcmPacket);
     }
 
     @Override
