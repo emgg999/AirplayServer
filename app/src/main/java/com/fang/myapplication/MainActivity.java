@@ -34,7 +34,7 @@ public class MainActivity extends Activity {
         Toast.makeText(this.getApplicationContext(), "启动服务成功", Toast.LENGTH_SHORT).show();
     }
     @Override
-    protected onDestroy() {
+    protected void onDestroy() {
         super.onDestroy();
         stopServer();
     }
