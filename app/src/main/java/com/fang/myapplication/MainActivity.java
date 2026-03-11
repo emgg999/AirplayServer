@@ -39,20 +39,18 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.btn_control: {
-                if (!mIsStart) {
-                    startServer();
-                    mTxtDevice.setText("设备名称:" + mDNSNotify.getDeviceName());
-                } else {
-                    stopServer();
-                    mTxtDevice.setText("未启动");
-                }
-                mIsStart = !mIsStart;
-                mBtnControl.setText(mIsStart ? "结束" : "开始");
-                break;
+        if (v.getId() == R.id.btn_control) {
+            if (!mIsStart) {
+                startServer();
+                mTxtDevice.setText("设备名称:" + mDNSNotify.getDeviceName());
+            } else {
+                stopServer();
+                mTxtDevice.setText("未启动");
             }
+            mIsStart = !mIsStart;
+            mBtnControl.setText(mIsStart ? "结束" : "开始");
         }
+
     }
 
     private void startServer() {
