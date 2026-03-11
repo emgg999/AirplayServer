@@ -25,6 +25,10 @@ public class VideoPlayer extends Thread {
     private boolean mIsEnd = false;
     private List<NALPacket> mListBuffer = Collections.synchronizedList(new ArrayList<NALPacket>());
 
+    private static final int MAX_BUFFER_SIZE = 3; // 减少缓冲队列大小
+    private static final int DECODE_TIMEOUT = 10; // 减少等待超时时间
+    
+
     public VideoPlayer(Surface surface) {
         mSurface = surface;
     }
@@ -33,8 +37,13 @@ public class VideoPlayer extends Thread {
         try {
             MediaFormat format = MediaFormat.createVideoFormat(mMimeType, mVideoWidth, mVideoHeight);
             mDecoder = MediaCodec.createDecoderByType(mMimeType);
-            mDecoder.configure(format, mSurface, null, 0);
-            mDecoder.setVideoScalingMode(MediaCodec.VIDEO_SCALING_MODE_SCALE_TO_FIT);
+            // 添加以下优化配置
+            format.setInteger(MediaFormat.KEY_PRIORITY, 0); // 设置高优先级
+            format.setInteger(MediaFormat.KEY_LATENCY, 0); // 设置低延迟模式
+            format.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, 0); // 动态调整输入大小
+            // 使用同步模式以获得更低的延迟
+            mDecoder = MediaCodec.createDecoderByType("video/avc");
+            mDecoder.configure(format, surface, null, 0);
             mDecoder.start();
         } catch (Exception e) {
             e.printStackTrace();
@@ -52,11 +61,15 @@ public class VideoPlayer extends Thread {
         while (!mIsEnd) {
             if (mListBuffer.size() == 0) {
                 try {
-                    sleep(50);
+                    sleep(DECODE_TIMEOUT); // 减少等待时间
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
                 continue;
+            }
+            // 限制缓冲队列大小
+            if (mListBuffer.size() > MAX_BUFFER_SIZE) {
+                mListBuffer.remove(0); // 丢弃旧帧
             }
             doDecode(mListBuffer.remove(0));
         }
@@ -76,7 +89,7 @@ public class VideoPlayer extends Thread {
             inputBuf.put(nalPacket.nalData);
             mDecoder.queueInputBuffer(inputBufIndex, 0, nalPacket.nalData.length, nalPacket.pts, 0);
         } else {
-            Log.d(TAG, "dequeueInputBuffer failed");
+            // Log.d(TAG, "dequeueInputBuffer failed");
         }
 
         int outputBufferIndex = -10000;

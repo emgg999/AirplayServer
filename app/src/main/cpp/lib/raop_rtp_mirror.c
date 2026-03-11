@@ -18,6 +18,9 @@
 #include "mirror_buffer.h"
 #include "stream.h"
 
+// 减少时间同步间隔
+#define TIME_SYNC_INTERVAL_MS 1000 // 从3000ms改为1000ms
+
 
 struct h264codec_s {
     unsigned char compatibility;
@@ -189,11 +192,15 @@ raop_rtp_mirror_thread_time(void *arg)
             struct timespec outtime;
             MUTEX_LOCK(raop_rtp_mirror->time_mutex);
             gettimeofday(&now, NULL);
-            outtime.tv_sec = now.tv_sec + 3;
-            outtime.tv_nsec = now.tv_usec * 1000;
+            outtime.tv_sec = now.tv_sec + (TIME_SYNC_INTERVAL_MS / 1000);
+            outtime.tv_nsec = (now.tv_usec * 1000) + ((TIME_SYNC_INTERVAL_MS % 1000) * 1000000);
+            // 处理纳秒溢出
+            if (outtime.tv_nsec >= 1000000000) {
+                outtime.tv_sec++;
+                outtime.tv_nsec -= 1000000000;
+            }
             int ret = pthread_cond_timedwait(&raop_rtp_mirror->time_cond, &raop_rtp_mirror->time_mutex, &outtime);
             MUTEX_UNLOCK(raop_rtp_mirror->time_mutex);
-            //sleepms(3000);
         }
     }
     logger_log(raop_rtp_mirror->logger, LOGGER_INFO, "Exiting UDP raop_rtp_mirror_thread_time thread");

@@ -33,17 +33,21 @@ void OnRecvVideoData(void *observer, h264_decode_struct *data) {
     jobject obj = (jobject) observer;
     JNIEnv* jniEnv = NULL;
     g_JavaVM->AttachCurrentThread(&jniEnv, NULL);
-    jclass cls = jniEnv->GetObjectClass(obj);
-    jmethodID onRecvVideoDataM = jniEnv->GetMethodID(cls, "onRecvVideoData", "([BIJJ)V");
-    jniEnv->DeleteLocalRef(cls);
+    
+    // 使用直接缓冲区减少拷贝
     jbyteArray barr = jniEnv->NewByteArray(data->data_len);
     if (barr == NULL) return;
-    jniEnv->SetByteArrayRegion(barr, (jint) 0, data->data_len, (jbyte *) data->data);
-    jniEnv->CallVoidMethod(obj, onRecvVideoDataM, barr, data->frame_type,
-                                         data->pts, data->pts);
+    jniEnv->SetByteArrayRegion(barr, 0, data->data_len, (jbyte *) data->data);
+    
+    jclass cls = jniEnv->GetObjectClass(obj);
+    jmethodID onRecvVideoDataM = jniEnv->GetMethodID(cls, "onRecvVideoData", "([BIJJ)V");
+    jniEnv->CallVoidMethod(obj, onRecvVideoDataM, barr, data->frame_type, data->pts, data->pts);
+    
     jniEnv->DeleteLocalRef(barr);
+    jniEnv->DeleteLocalRef(cls);
     g_JavaVM->DetachCurrentThread();
 }
+
 
 extern "C" void
 audio_process(void *cls, pcm_data_struct *data)
