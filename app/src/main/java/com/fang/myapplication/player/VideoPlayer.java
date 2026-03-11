@@ -25,8 +25,8 @@ public class VideoPlayer extends Thread {
     private boolean mIsEnd = false;
     private List<NALPacket> mListBuffer = Collections.synchronizedList(new ArrayList<NALPacket>());
 
-    private static final int MAX_BUFFER_SIZE = 3; // 减少缓冲队列大小
-    private static final int DECODE_TIMEOUT = 10; // 减少等待超时时间
+    private static final int MAX_BUFFER_SIZE = 5; // 减少缓冲队列大小
+    private static final int DECODE_TIMEOUT = 5; // 减少等待超时时间
     
 
     public VideoPlayer(Surface surface) {
@@ -36,13 +36,16 @@ public class VideoPlayer extends Thread {
     public void initDecoder() {
         try {
             MediaFormat format = MediaFormat.createVideoFormat(mMimeType, mVideoWidth, mVideoHeight);
+            // 优化解码器配置
+            format.setInteger(MediaFormat.KEY_PRIORITY, 0);
+            format.setInteger(MediaFormat.KEY_LATENCY, 0);
+            format.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, 0);
+            // 添加关键帧间隔设置
+            format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1);
+            // 启用自适应播放
+            format.setInteger(MediaFormat.KEY_MAX_WIDTH, mVideoWidth);
+            format.setInteger(MediaFormat.KEY_MAX_HEIGHT, mVideoHeight);
             mDecoder = MediaCodec.createDecoderByType(mMimeType);
-            // 添加以下优化配置
-            format.setInteger(MediaFormat.KEY_PRIORITY, 0); // 设置高优先级
-            format.setInteger(MediaFormat.KEY_LATENCY, 0); // 设置低延迟模式
-            format.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, 0); // 动态调整输入大小
-            // 使用同步模式以获得更低的延迟
-            mDecoder = MediaCodec.createDecoderByType("video/avc");
             mDecoder.configure(format, mSurface, null, 0);
             mDecoder.start();
         } catch (Exception e) {
@@ -67,29 +70,40 @@ public class VideoPlayer extends Thread {
                 }
                 continue;
             }
-            // 限制缓冲队列大小
+            // 改进缓冲策略：只在队列过大时丢弃旧帧，并优先保留关键帧
             if (mListBuffer.size() > MAX_BUFFER_SIZE) {
-                mListBuffer.remove(0); // 丢弃旧帧
+                // 从队列中查找并保留最近的关键帧
+                for (int i = 0; i < mListBuffer.size(); i++) {
+                    if (mListBuffer.get(i).nalType == 5) { // I帧
+                        mListBuffer.remove(0);
+                        break;
+                    }
+                }
+                // 如果没有关键帧，则丢弃最旧的帧
+                if (mListBuffer.size() > MAX_BUFFER_SIZE) {
+                    mListBuffer.remove(0);
+                }
             }
             doDecode(mListBuffer.remove(0));
         }
     }
 
     private void doDecode(NALPacket nalPacket) {
-        final int TIMEOUT_USEC = 10000;
+        final int TIMEOUT_USEC = 5000; // 减少超时时间
         ByteBuffer[] decoderInputBuffers = mDecoder.getInputBuffers();
         int inputBufIndex = -10000;
+        
         try {
             inputBufIndex = mDecoder.dequeueInputBuffer(TIMEOUT_USEC);
         } catch (Exception e) {
             e.printStackTrace();
         }
+        
         if (inputBufIndex >= 0) {
             ByteBuffer inputBuf = decoderInputBuffers[inputBufIndex];
+            inputBuf.clear();
             inputBuf.put(nalPacket.nalData);
             mDecoder.queueInputBuffer(inputBufIndex, 0, nalPacket.nalData.length, nalPacket.pts, 0);
-        } else {
-            // Log.d(TAG, "dequeueInputBuffer failed");
         }
 
         int outputBufferIndex = -10000;
@@ -98,27 +112,38 @@ public class VideoPlayer extends Thread {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        
         if (outputBufferIndex >= 0) {
-            mDecoder.releaseOutputBuffer(outputBufferIndex, true);
-            try{
-                Thread.sleep(50);
-            }  catch (InterruptedException ie){
+            // 根据帧类型调整渲染策略
+            boolean render = true;
+            if (nalPacket.nalType == 5) { // I帧
+                render = true;
+            } else if (mListBuffer.size() > MAX_BUFFER_SIZE - 1) { // 队列压力大时跳过部分P帧
+                render = false;
+            }
+            mDecoder.releaseOutputBuffer(outputBufferIndex, render);
+            
+            // 动态调整等待时间
+            try {
+                if (render) {
+                    Thread.sleep(16); // 约60fps
+                } else {
+                    Thread.sleep(5); // 跳过帧时减少等待
+                }
+            } catch (InterruptedException ie) {
                 ie.printStackTrace();
             }
         } else if (outputBufferIndex == MediaCodec.INFO_TRY_AGAIN_LATER) {
-            try{
-                Thread.sleep(10);
-            }  catch (InterruptedException ie){
+            try {
+                Thread.sleep(5);
+            } catch (InterruptedException ie) {
                 ie.printStackTrace();
             }
         } else if (outputBufferIndex == MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED) {
-            // not important for us, since we're using Surface
-
+            decoderInputBuffers = mDecoder.getInputBuffers();
         } else if (outputBufferIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
-
-        } else {
-
+            // 处理格式变化
         }
-
     }
+
 }

@@ -13,20 +13,20 @@
 
 static JavaVM* g_JavaVM;
 
-void OnRecvAudioData(void *observer, pcm_data_struct *data) {
-    jobject obj = (jobject) observer;
-    JNIEnv* jniEnv = NULL;
-    g_JavaVM->AttachCurrentThread(&jniEnv, NULL);
-    jclass cls = jniEnv->GetObjectClass(obj);
-    jmethodID onRecvVideoDataM = jniEnv->GetMethodID(cls, "onRecvAudioData", "([SJ)V");
-    jniEnv->DeleteLocalRef(cls);
-    jshortArray sarr = jniEnv->NewShortArray(data->data_len);
-    if (sarr == NULL) return;
-    jniEnv->SetShortArrayRegion(sarr, (jint) 0, data->data_len, (jshort *) data->data);
-    jniEnv->CallVoidMethod(obj, onRecvVideoDataM, sarr, data->pts);
-    jniEnv->DeleteLocalRef(sarr);
-    g_JavaVM->DetachCurrentThread();
-}
+// void OnRecvAudioData(void *observer, pcm_data_struct *data) {
+//     jobject obj = (jobject) observer;
+//     JNIEnv* jniEnv = NULL;
+//     g_JavaVM->AttachCurrentThread(&jniEnv, NULL);
+//     jclass cls = jniEnv->GetObjectClass(obj);
+//     jmethodID onRecvVideoDataM = jniEnv->GetMethodID(cls, "onRecvAudioData", "([SJ)V");
+//     jniEnv->DeleteLocalRef(cls);
+//     jshortArray sarr = jniEnv->NewShortArray(data->data_len);
+//     if (sarr == NULL) return;
+//     jniEnv->SetShortArrayRegion(sarr, (jint) 0, data->data_len, (jshort *) data->data);
+//     jniEnv->CallVoidMethod(obj, onRecvVideoDataM, sarr, data->pts);
+//     jniEnv->DeleteLocalRef(sarr);
+//     g_JavaVM->DetachCurrentThread();
+// }
 
 
 void OnRecvVideoData(void *observer, h264_decode_struct *data) {
@@ -52,7 +52,7 @@ void OnRecvVideoData(void *observer, h264_decode_struct *data) {
 extern "C" void
 audio_process(void *cls, pcm_data_struct *data)
 {
-    OnRecvAudioData(cls, data);
+    // OnRecvAudioData(cls, data);
 }
 
 extern "C" void

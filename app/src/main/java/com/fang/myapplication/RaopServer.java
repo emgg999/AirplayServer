@@ -23,15 +23,23 @@ public class RaopServer implements SurfaceHolder.Callback {
         mSurfaceView = surfaceView;
         mSurfaceView.getHolder().addCallback(this);
     }
-
     public void onRecvVideoData(byte[] nal, int nalType, long dts, long pts) {
-        // Log.d(TAG, "onRecvVideoData pts = " + pts + ", nalType = " + nalType + ", nal length = " + nal.length);
         NALPacket nalPacket = new NALPacket();
         nalPacket.nalData = nal;
         nalPacket.nalType = nalType;
         nalPacket.pts = pts;
-        mVideoPlayer.addPacker(nalPacket);
+        nalPacket.dts = dts;
+        
+        // 对于关键帧，确保优先处理
+        if (nalType == 5) { // I帧
+            synchronized (mVideoPlayer) {
+                mVideoPlayer.addPacker(nalPacket);
+            }
+        } else {
+            mVideoPlayer.addPacker(nalPacket);
+        }
     }
+
 
     public void onRecvAudioData(short[] pcm, long pts) {
         // Log.d(TAG, "onRecvAudioData pcm length = " + pcm.length + ", pts = " + pts);
