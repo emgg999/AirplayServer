@@ -29,7 +29,7 @@ public class RaopServer implements SurfaceHolder.Callback {
     }
 
     public void onRecvVideoData(byte[] nal, int nalType, long dts, long pts) {
-        Log.d(TAG, "onRecvVideoData pts = " + pts + ", nalType = " + nalType + ", nal length = " + nal.length);
+        // Log.d(TAG, "onRecvVideoData pts = " + pts + ", nalType = " + nalType + ", nal length = " + nal.length);
         NALPacket nalPacket = new NALPacket();
         nalPacket.nalData = nal;
         nalPacket.nalType = nalType;
@@ -38,7 +38,7 @@ public class RaopServer implements SurfaceHolder.Callback {
     }
 
     public void onRecvAudioData(short[] pcm, long pts) {
-        Log.d(TAG, "onRecvAudioData pcm length = " + pcm.length + ", pts = " + pts);
+        // Log.d(TAG, "onRecvAudioData pcm length = " + pcm.length + ", pts = " + pts);
         PCMPacket pcmPacket = new PCMPacket();
         pcmPacket.data = pcm;
         pcmPacket.pts = pts;
