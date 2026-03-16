@@ -22,6 +22,7 @@ public class DNSNotify {
 
     public DNSNotify() {
         mMacAddress = NetUtils.getLocalMacAddress();
+        Log.e(TAG, "==========================>mMacAddress = " + mMacAddress);
         mDeviceName = "t";
     }
 
@@ -52,18 +53,24 @@ public class DNSNotify {
     public void registerRaop(int port) {
         Log.d(TAG, "registerRaop port = " + port);
         TXTRecord txtRecord = new TXTRecord();
-        txtRecord.set("ch", "2");
-        txtRecord.set("cn", "0,1,2,3");
-        txtRecord.set("da", "true");
-        txtRecord.set("et", "0,3,5");
+//        txtRecord.set("ch", "2");
+        txtRecord.set("ch", "1");
+//        txtRecord.set("cn", "0,1,2,3");
+        txtRecord.set("cn", "3");
+//        txtRecord.set("da", "true");
+        txtRecord.set("da", "false");
+//        txtRecord.set("et", "0,3,5");
+        txtRecord.set("et", "0");
         txtRecord.set("vv", "2");
         txtRecord.set("ft", "0x5A7FFFF7,0x1E");
         txtRecord.set("am", "AppleTV2,1");
-        txtRecord.set("md", "0,1,2");
+//        txtRecord.set("md", "0,1,2");
+        txtRecord.set("md", "1");
         txtRecord.set("rhd", "5.6.0.0");
         txtRecord.set("pw", "false");
-        txtRecord.set("sr", "44100");
-        txtRecord.set("ss", "16");
+//        txtRecord.set("sr", "44100");
+        txtRecord.set("sr", "22050");
+        txtRecord.set("ss", "8");
         txtRecord.set("sv", "false");
         txtRecord.set("tp", "UDP");
         txtRecord.set("txtvers", "1");

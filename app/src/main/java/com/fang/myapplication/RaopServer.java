@@ -1,11 +1,12 @@
 package com.fang.myapplication;
 
-import android.util.Log;
+import android.graphics.SurfaceTexture;
+import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.TextureView;
 
 import com.fang.myapplication.model.NALPacket;
-import com.fang.myapplication.model.PCMPacket;
 import com.fang.myapplication.player.VideoPlayer;
 
 public class RaopServer implements SurfaceHolder.Callback {
@@ -14,53 +15,44 @@ public class RaopServer implements SurfaceHolder.Callback {
         System.loadLibrary("raop_server");
         System.loadLibrary("play-lib");
     }
+
     private static final String TAG = "RaopServer";
     private VideoPlayer mVideoPlayer;
     private SurfaceView mSurfaceView;
+    private Surface mSurface;
+    private boolean mSurfaceAvailable = false;
     private long mServerId = 0;
+
+    // SPS/PPS 数据缓存，用于快速恢复
+    private byte[] mSPSData = null;
+    private byte[] mPPSData = null;
 
     public RaopServer(SurfaceView surfaceView) {
         mSurfaceView = surfaceView;
         mSurfaceView.getHolder().addCallback(this);
     }
+
     public void onRecvVideoData(byte[] nal, int nalType, long dts, long pts) {
+        // 缓存 SPS/PPS 数据
+        if (nalType == 7) { // SPS
+            mSPSData = nal.clone();
+        } else if (nalType == 8) { // PPS
+            mPPSData = nal.clone();
+        }
+
         NALPacket nalPacket = new NALPacket();
         nalPacket.nalData = nal;
         nalPacket.nalType = nalType;
         nalPacket.pts = pts;
-        nalPacket.dts = dts;
-        
-        // 对于关键帧，确保优先处理
-        if (nalType == 5) { // I帧
-            synchronized (mVideoPlayer) {
-                mVideoPlayer.addPacker(nalPacket);
-            }
-        } else {
-            mVideoPlayer.addPacker(nalPacket);
+
+        if (mVideoPlayer != null) {
+            mVideoPlayer.doDecode(nalPacket);
         }
     }
 
 
     public void onRecvAudioData(short[] pcm, long pts) {
         // Log.d(TAG, "onRecvAudioData pcm length = " + pcm.length + ", pts = " + pts);
-    }
-
-    @Override
-    public void surfaceCreated(SurfaceHolder holder) {
-
-    }
-
-    @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        if (mVideoPlayer == null) {
-            mVideoPlayer = new VideoPlayer(holder.getSurface());
-            mVideoPlayer.start();
-        }
-    }
-
-    @Override
-    public void surfaceDestroyed(SurfaceHolder holder) {
-
     }
 
     public void startServer() {
@@ -85,6 +77,35 @@ public class RaopServer implements SurfaceHolder.Callback {
     }
 
     private native long start();
+
     private native void stop(long serverId);
+
     private native int getPort(long serverId);
+
+    @Override
+    public void surfaceCreated(SurfaceHolder surfaceHolder) {
+        mSurface = surfaceHolder.getSurface();
+        mSurfaceAvailable = true;
+        if (mVideoPlayer == null) {
+            mVideoPlayer = new VideoPlayer(mSurface);
+        }
+    }
+
+    @Override
+    public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) {
+
+    }
+
+    @Override
+    public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
+        mSurfaceAvailable = false;
+        if (mSurface != null) {
+            mSurface.release();
+            mSurface = null;
+        }
+        if (mVideoPlayer != null) {
+            mVideoPlayer.stopPlayback();
+            mVideoPlayer = null;
+        }
+    }
 }

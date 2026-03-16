@@ -1,0 +1,14 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : [],
+		"files" : [],
+		"nodes" : []
+	},
+	"installers" : [],
+	"paths" : 
+	{
+		"build" : "src/main/cpp/mDNSResponder",
+		"source" : "src/main/cpp/mDNSResponder"
+	}
+}

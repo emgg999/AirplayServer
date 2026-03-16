@@ -1,149 +1,242 @@
 package com.fang.myapplication.player;
 
 import android.media.MediaCodec;
+import android.media.MediaCodecInfo;
+import android.media.MediaCodecList;
 import android.media.MediaFormat;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.util.Log;
 import android.view.Surface;
 
 import com.fang.myapplication.model.NALPacket;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
-public class VideoPlayer extends Thread {
+public class VideoPlayer {
 
     private static final String TAG = "VideoPlayer";
 
-    private String mMimeType = "video/avc";
-    private int mVideoWidth  = 540;
-    private int mVideoHeight = 960;
+    private int mVideoWidth = 1280;
+    private int mVideoHeight = 720;
+    private static final long DECODE_TIMEOUT_US = 0; // 零超时，立即返回
+    private static final int RING_BUFFER_SIZE = 64; // 2 的幂次，方便取模
+
     private MediaCodec.BufferInfo mBufferInfo = new MediaCodec.BufferInfo();
     private MediaCodec mDecoder = null;
     private Surface mSurface = null;
-    private boolean mIsEnd = false;
-    private List<NALPacket> mListBuffer = Collections.synchronizedList(new ArrayList<NALPacket>());
+    private AtomicBoolean mIsEnd = new AtomicBoolean(false);
+    private volatile boolean mDecoderReady = false;
 
-    private static final int MAX_BUFFER_SIZE = 5; // 减少缓冲队列大小
-    private static final int DECODE_TIMEOUT = 5; // 减少等待超时时间
-    
+    // 环形缓冲区（无锁实现）
+    private final NALPacket[] mRingBuffer = new NALPacket[RING_BUFFER_SIZE];
+    private final AtomicInteger mWriteIndex = new AtomicInteger(0);
+    private final AtomicInteger mReadIndex = new AtomicInteger(0);
+
+    // 解码线程
+    private HandlerThread mDecodeThread;
+    private Handler mDecodeHandler;
+
+    // 预分配的 NALPacket 对象池
+    private final NALPacket[] mPacketPool = new NALPacket[RING_BUFFER_SIZE * 2];
+    private final AtomicInteger mPoolIndex = new AtomicInteger(0);
+
 
     public VideoPlayer(Surface surface) {
         mSurface = surface;
+        initPacketPool();
+        for (int i = 0; i < RING_BUFFER_SIZE; i++) {
+            mRingBuffer[i] = getPacketFromPool();
+        }
+        startDecodeThread();
+        initDecoder();
     }
 
-    public void initDecoder() {
+    private void initPacketPool() {
+        for (int i = 0; i < mPacketPool.length; i++) {
+            mPacketPool[i] = new NALPacket();
+        }
+    }
+
+    private NALPacket getPacketFromPool() {
+        int index = mPoolIndex.getAndIncrement() % mPacketPool.length;
+        return mPacketPool[index];
+    }
+
+    private void startDecodeThread() {
+        mDecodeThread = new HandlerThread("VideoDecodeThread");
+        mDecodeThread.start();
+        mDecodeHandler = new Handler(mDecodeThread.getLooper());
+    }
+
+    private void stopDecodeThread() {
+        if (mDecodeThread != null) {
+            mDecodeThread.quitSafely();
+            try {
+                mDecodeThread.join(1000);
+            } catch (InterruptedException e) {
+                Log.e(TAG, "Error stopping decode thread", e);
+            }
+            mDecodeThread = null;
+            mDecodeHandler = null;
+        }
+    }
+
+
+    private void initDecoder() {
         try {
-            MediaFormat format = MediaFormat.createVideoFormat(mMimeType, mVideoWidth, mVideoHeight);
-            // 优化解码器配置
-            format.setInteger(MediaFormat.KEY_PRIORITY, 0);
-            format.setInteger(MediaFormat.KEY_LATENCY, 0);
-            format.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, 0);
-            // 添加关键帧间隔设置
+            // 2. 初始化MediaCodec
+            MediaFormat format = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, mVideoWidth, mVideoHeight);
+            format.setInteger(MediaFormat.KEY_PRIORITY, 1); // 最高优先级
             format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1);
-            // 启用自适应播放
             format.setInteger(MediaFormat.KEY_MAX_WIDTH, mVideoWidth);
             format.setInteger(MediaFormat.KEY_MAX_HEIGHT, mVideoHeight);
-            mDecoder = MediaCodec.createDecoderByType(mMimeType);
+            format.setInteger(MediaFormat.KEY_PROFILE, MediaCodecInfo.CodecProfileLevel.AVCProfileBaseline);
+            format.setInteger(MediaFormat.KEY_LEVEL, MediaCodecInfo.CodecProfileLevel.AVCLevel31);
+            // 选择硬件编解码器
+            String codecName = getHardwareCodecName(MediaFormat.MIMETYPE_VIDEO_AVC, false);
+            if (codecName != null) {
+                Log.d(TAG, "Using hardware codec: " + codecName);
+                mDecoder = MediaCodec.createByCodecName(codecName);
+            } else {
+                Log.w(TAG, "Hardware codec not found, using software codec");
+                mDecoder = MediaCodec.createDecoderByType(MediaFormat.MIMETYPE_VIDEO_AVC);
+            }
             mDecoder.configure(format, mSurface, null, 0);
             mDecoder.start();
+            mDecoderReady = true;
+            Log.d(TAG, "Decoder initialized successfully");
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(TAG, "Failed to init decoder", e);
+            mDecoderReady = false;
         }
     }
 
-    public void addPacker(NALPacket nalPacket) {
-        mListBuffer.add(nalPacket);
-    }
-    
-    @Override
-    public void run() {
-        super.run();
-        initDecoder();
-        while (!mIsEnd) {
-            if (mListBuffer.size() == 0) {
-                try {
-                    sleep(DECODE_TIMEOUT); // 减少等待时间
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+    private String getHardwareCodecName(String mimeType, boolean isEncoder) {
+        int numCodecs = MediaCodecList.getCodecCount();
+        for (int i = 0; i < numCodecs; i++) {
+            MediaCodecInfo codecInfo = MediaCodecList.getCodecInfoAt(i);
+            if (codecInfo.isEncoder() != isEncoder) {
                 continue;
             }
-            // 改进缓冲策略：只在队列过大时丢弃旧帧，并优先保留关键帧
-            if (mListBuffer.size() > MAX_BUFFER_SIZE) {
-                // 从队列中查找并保留最近的关键帧
-                for (int i = 0; i < mListBuffer.size(); i++) {
-                    if (mListBuffer.get(i).nalType == 5) { // I帧
-                        mListBuffer.remove(0);
-                        break;
+            if (codecInfo.getName().startsWith("OMX.")) {
+                continue; // 跳过软件编解码器
+            }
+            try {
+                MediaCodecInfo.CodecCapabilities capabilities = codecInfo.getCapabilitiesForType(mimeType);
+                if (capabilities != null) {
+                    return codecInfo.getName();
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Error getting codec capabilities", e);
+            }
+        }
+        return null;
+    }
+
+    public void doDecode(NALPacket nalPacket) {
+        if (mDecoder == null || !mDecoderReady) {
+            return;
+        }
+        // 快速路径：直接写入环形缓冲区
+        int writeIdx = mWriteIndex.getAndIncrement() & (RING_BUFFER_SIZE - 1);
+        NALPacket packet = mRingBuffer[writeIdx];
+        // 复用对象，避免内存分配
+        packet.nalData = nalPacket.nalData;
+        packet.nalType = nalPacket.nalType;
+        packet.pts = nalPacket.pts;
+        // 检查是否丢帧
+        int readIdx = mReadIndex.get();
+        if (((mWriteIndex.get() - readIdx) > RING_BUFFER_SIZE - 2)) {
+            // 缓冲区快满了，跳过一些帧
+            mReadIndex.incrementAndGet();
+        }
+        // 触发解码
+        if (mDecodeHandler != null) {
+            mDecodeHandler.post(this::processDecodeQueue);
+        }
+//        try {
+//            ByteBuffer[] inputBuffers = mDecoder.getInputBuffers();
+//            int inputBufIndex = mDecoder.dequeueInputBuffer(0); // 0超时，立即返回
+//            if (inputBufIndex >= 0) {
+//                ByteBuffer inputBuf = inputBuffers[inputBufIndex];
+//                inputBuf.put(nalPacket.nalData);
+//                mDecoder.queueInputBuffer(inputBufIndex, 0, nalPacket.nalData.length, nalPacket.pts, 0);
+//            }
+//            int outputBufferIndex = mDecoder.dequeueOutputBuffer(mBufferInfo, 0);
+//            if (outputBufferIndex >= 0) {
+//                mDecoder.releaseOutputBuffer(outputBufferIndex, true);
+//            }
+//        } catch (Exception e) {
+//            Log.e(TAG, "Decode error", e);
+//        }
+    }
+
+    private void processDecodeQueue() {
+        if (mDecoder == null || !mDecoderReady) {
+            return;
+        }
+        int readIdx = mReadIndex.get() & (RING_BUFFER_SIZE - 1);
+        int writeIdx = mWriteIndex.get() & (RING_BUFFER_SIZE - 1);
+
+        // 如果有数据可读
+        if (mReadIndex.get() != mWriteIndex.get()) {
+            NALPacket packet = mRingBuffer[readIdx];
+
+            try {
+                // 输入数据到解码器
+                int inputBufIndex = mDecoder.dequeueInputBuffer(DECODE_TIMEOUT_US);
+                if (inputBufIndex >= 0) {
+                    ByteBuffer inputBuf = mDecoder.getInputBuffer(inputBufIndex);
+                    if (inputBuf != null) {
+                        inputBuf.clear();
+                        inputBuf.put(packet.nalData);
+                        int flags = (packet.nalType == 5) ? MediaCodec.BUFFER_FLAG_KEY_FRAME : 0;
+                        mDecoder.queueInputBuffer(inputBufIndex, 0, packet.nalData.length, packet.pts, flags);
                     }
                 }
-                // 如果没有关键帧，则丢弃最旧的帧
-                if (mListBuffer.size() > MAX_BUFFER_SIZE) {
-                    mListBuffer.remove(0);
+
+                // 处理输出数据
+                MediaCodec.BufferInfo info = new MediaCodec.BufferInfo();
+                int outputBufferIndex = mDecoder.dequeueOutputBuffer(info, DECODE_TIMEOUT_US);
+                while (outputBufferIndex >= 0) {
+                    if (info.size != 0) {
+                        mDecoder.releaseOutputBuffer(outputBufferIndex, true);
+                    } else {
+                        mDecoder.releaseOutputBuffer(outputBufferIndex, false);
+                    }
+                    outputBufferIndex = mDecoder.dequeueOutputBuffer(info, DECODE_TIMEOUT_US);
                 }
+
+                // 读取完成后更新读索引
+                mReadIndex.incrementAndGet();
+
+            } catch (Exception e) {
+                Log.e(TAG, "Decode error", e);
             }
-            doDecode(mListBuffer.remove(0));
         }
     }
 
-    private void doDecode(NALPacket nalPacket) {
-        final int TIMEOUT_USEC = 5000; // 减少超时时间
-        ByteBuffer[] decoderInputBuffers = mDecoder.getInputBuffers();
-        int inputBufIndex = -10000;
-        
-        try {
-            inputBufIndex = mDecoder.dequeueInputBuffer(TIMEOUT_USEC);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        
-        if (inputBufIndex >= 0) {
-            ByteBuffer inputBuf = decoderInputBuffers[inputBufIndex];
-            inputBuf.clear();
-            inputBuf.put(nalPacket.nalData);
-            mDecoder.queueInputBuffer(inputBufIndex, 0, nalPacket.nalData.length, nalPacket.pts, 0);
-        }
-
-        int outputBufferIndex = -10000;
-        try {
-            outputBufferIndex = mDecoder.dequeueOutputBuffer(mBufferInfo, TIMEOUT_USEC);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        
-        if (outputBufferIndex >= 0) {
-            // 根据帧类型调整渲染策略
-            boolean render = true;
-            if (nalPacket.nalType == 5) { // I帧
-                render = true;
-            } else if (mListBuffer.size() > MAX_BUFFER_SIZE - 1) { // 队列压力大时跳过部分P帧
-                render = false;
-            }
-            mDecoder.releaseOutputBuffer(outputBufferIndex, render);
-            
-            // 动态调整等待时间
+    private void releaseDecoder() {
+        if (mDecoder != null) {
             try {
-                if (render) {
-                    Thread.sleep(16); // 约60fps
-                } else {
-                    Thread.sleep(5); // 跳过帧时减少等待
-                }
-            } catch (InterruptedException ie) {
-                ie.printStackTrace();
+                mDecoder.stop();
+                mDecoder.release();
+            } catch (Exception e) {
+                Log.e(TAG, "Error releasing decoder", e);
             }
-        } else if (outputBufferIndex == MediaCodec.INFO_TRY_AGAIN_LATER) {
-            try {
-                Thread.sleep(5);
-            } catch (InterruptedException ie) {
-                ie.printStackTrace();
-            }
-        } else if (outputBufferIndex == MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED) {
-            decoderInputBuffers = mDecoder.getInputBuffers();
-        } else if (outputBufferIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
-            // 处理格式变化
+            mDecoder = null;
         }
+        mDecoderReady = false;
     }
 
+    public void stopPlayback() {
+        mIsEnd.set(true);
+        stopDecodeThread();
+        releaseDecoder();
+        mWriteIndex.set(0);
+        mReadIndex.set(0);
+    }
 }

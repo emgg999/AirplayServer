@@ -5,9 +5,6 @@ import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.SurfaceView;
-import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
@@ -19,7 +16,6 @@ public class MainActivity extends Activity {
     private DNSNotify mDNSNotify;
 
     private SurfaceView mSurfaceView;
-    private boolean mIsStart = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,10 +29,19 @@ public class MainActivity extends Activity {
         startServer();
         Toast.makeText(this.getApplicationContext(), "启动服务成功", Toast.LENGTH_SHORT).show();
     }
+
+//    @Override
+//    protected void onResume() {
+//        super.onResume();
+//        stopServer();
+//        Toast.makeText(this.getApplicationContext(), "停止服务成功", Toast.LENGTH_SHORT).show();
+//    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
         stopServer();
+        Toast.makeText(this.getApplicationContext(), "停止服务成功", Toast.LENGTH_SHORT).show();
     }
 
     private void startServer() {

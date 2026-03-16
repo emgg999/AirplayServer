@@ -13,6 +13,8 @@
 
 static JavaVM* g_JavaVM;
 
+static jmethodID g_on_recv_video_data_method = NULL;
+
 // void OnRecvAudioData(void *observer, pcm_data_struct *data) {
 //     jobject obj = (jobject) observer;
 //     JNIEnv* jniEnv = NULL;
@@ -33,18 +35,17 @@ void OnRecvVideoData(void *observer, h264_decode_struct *data) {
     jobject obj = (jobject) observer;
     JNIEnv* jniEnv = NULL;
     g_JavaVM->AttachCurrentThread(&jniEnv, NULL);
-    
     // 使用直接缓冲区减少拷贝
     jbyteArray barr = jniEnv->NewByteArray(data->data_len);
     if (barr == NULL) return;
-    jniEnv->SetByteArrayRegion(barr, 0, data->data_len, (jbyte *) data->data);
-    
     jclass cls = jniEnv->GetObjectClass(obj);
-    jmethodID onRecvVideoDataM = jniEnv->GetMethodID(cls, "onRecvVideoData", "([BIJJ)V");
-    jniEnv->CallVoidMethod(obj, onRecvVideoDataM, barr, data->frame_type, data->pts, data->pts);
-    
+    if (g_on_recv_video_data_method == NULL) {
+        g_on_recv_video_data_method = jniEnv->GetMethodID(cls, "onRecvVideoData", "([BIJJ)V");
+    }
+    jniEnv->SetByteArrayRegion(barr, 0, data->data_len, (jbyte *) data->data);
+    jniEnv->CallVoidMethod(obj, g_on_recv_video_data_method, barr, data->frame_type, data->pts, data->pts);
     jniEnv->DeleteLocalRef(barr);
-    jniEnv->DeleteLocalRef(cls);
+//    jniEnv->DeleteLocalRef(cls);
     g_JavaVM->DetachCurrentThread();
 }
 
@@ -71,15 +72,15 @@ extern "C" void
 log_callback(void *cls, int level, const char *msg) {
     switch (level) {
         case LOGGER_DEBUG: {
-            LOGD("%s", msg);
+//            LOGD("%s", msg);
             break;
         }
         case LOGGER_WARNING: {
-            LOGW("%s", msg);
+//            LOGW("%s", msg);
             break;
         }
         case LOGGER_INFO: {
-            LOGI("%s", msg);
+//            LOGI("%s", msg);
             break;
         }
         case LOGGER_ERR: {

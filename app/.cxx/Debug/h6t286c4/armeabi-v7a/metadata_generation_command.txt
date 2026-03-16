@@ -1,0 +1,18 @@
+                        -H/Users/zhou/Desktop/AirplayServer/app
+-DCMAKE_SYSTEM_NAME=Android
+-DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+-DCMAKE_SYSTEM_VERSION=24
+-DANDROID_PLATFORM=android-24
+-DANDROID_ABI=armeabi-v7a
+-DCMAKE_ANDROID_ARCH_ABI=armeabi-v7a
+-DANDROID_NDK=/Users/zhou/Android-SDK/ndk/25.1.8937393
+-DCMAKE_ANDROID_NDK=/Users/zhou/Android-SDK/ndk/25.1.8937393
+-DCMAKE_TOOLCHAIN_FILE=/Users/zhou/Android-SDK/ndk/25.1.8937393/build/cmake/android.toolchain.cmake
+-DCMAKE_MAKE_PROGRAM=/Users/zhou/Android-SDK/cmake/3.22.1/bin/ninja
+-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=/Users/zhou/Desktop/AirplayServer/app/build/intermediates/cxx/Debug/h6t286c4/obj/armeabi-v7a
+-DCMAKE_RUNTIME_OUTPUT_DIRECTORY=/Users/zhou/Desktop/AirplayServer/app/build/intermediates/cxx/Debug/h6t286c4/obj/armeabi-v7a
+-DCMAKE_BUILD_TYPE=Debug
+-B/Users/zhou/Desktop/AirplayServer/app/.cxx/Debug/h6t286c4/armeabi-v7a
+-GNinja
+                        Build command args: []
+                        Version: 2

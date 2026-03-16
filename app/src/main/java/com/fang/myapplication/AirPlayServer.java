@@ -50,8 +50,8 @@ public class AirPlayServer {
         public void run() {
             try {
                 Socket socket = mServerSocket.accept();
-                // Log.d(TAG, "receive accept");
-            } catch (IOException e) {
+                Log.e(TAG, "receive accept");
+            } catch (Exception e) {
                 e.printStackTrace();
             }
 

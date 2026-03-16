@@ -1,0 +1,259 @@
+{
+	"artifacts" : 
+	[
+		{
+			"path" : "/Users/zhou/Desktop/AirplayServer/app/build/intermediates/cxx/Debug/h6t286c4/obj/armeabi-v7a/libraop_server.so"
+		}
+	],
+	"backtrace" : 1,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"add_library",
+			"target_link_libraries",
+			"include_directories"
+		],
+		"files" : 
+		[
+			"CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 26,
+				"parent" : 0
+			},
+			{
+				"command" : 1,
+				"file" : 0,
+				"line" : 33,
+				"parent" : 0
+			},
+			{
+				"command" : 2,
+				"file" : 0,
+				"line" : 11,
+				"parent" : 0
+			}
+		]
+	},
+	"compileGroups" : 
+	[
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : "-g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -march=armv7-a -mthumb -Wformat -Werror=format-security   -fno-limit-debug-info  -fPIC"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"define" : "raop_server_EXPORTS"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 3,
+					"path" : "/Users/zhou/Desktop/AirplayServer/app/lib"
+				},
+				{
+					"backtrace" : 3,
+					"path" : "/Users/zhou/Desktop/AirplayServer/app/lib/fdk-aac/libAACdec/include"
+				},
+				{
+					"backtrace" : 3,
+					"path" : "/Users/zhou/Desktop/AirplayServer/app/lib/fdk-aac/libAACenc/include"
+				},
+				{
+					"backtrace" : 3,
+					"path" : "/Users/zhou/Desktop/AirplayServer/app/lib/fdk-aac/libFDK/include"
+				},
+				{
+					"backtrace" : 3,
+					"path" : "/Users/zhou/Desktop/AirplayServer/app/lib/fdk-aac/libMpegTPDec/include"
+				},
+				{
+					"backtrace" : 3,
+					"path" : "/Users/zhou/Desktop/AirplayServer/app/lib/fdk-aac/libMpegTPEnc/include"
+				},
+				{
+					"backtrace" : 3,
+					"path" : "/Users/zhou/Desktop/AirplayServer/app/lib/fdk-aac/libPCMutils/include"
+				},
+				{
+					"backtrace" : 3,
+					"path" : "/Users/zhou/Desktop/AirplayServer/app/lib/fdk-aac/libSBRdec/include"
+				},
+				{
+					"backtrace" : 3,
+					"path" : "/Users/zhou/Desktop/AirplayServer/app/lib/fdk-aac/libSBRenc/include"
+				},
+				{
+					"backtrace" : 3,
+					"path" : "/Users/zhou/Desktop/AirplayServer/app/lib/fdk-aac/libSYS/include"
+				},
+				{
+					"backtrace" : 3,
+					"path" : "/Users/zhou/Desktop/AirplayServer/app/lib/fdk-aac/libArithCoding/include"
+				},
+				{
+					"backtrace" : 3,
+					"path" : "/Users/zhou/Desktop/AirplayServer/app/lib/fdk-aac/libDRCdec/include"
+				},
+				{
+					"backtrace" : 3,
+					"path" : "/Users/zhou/Desktop/AirplayServer/app/lib/fdk-aac/libSACdec/include"
+				},
+				{
+					"backtrace" : 3,
+					"path" : "/Users/zhou/Desktop/AirplayServer/app/lib/fdk-aac/libSACenc/include"
+				}
+			],
+			"language" : "CXX",
+			"sourceIndexes" : 
+			[
+				0
+			],
+			"sysroot" : 
+			{
+				"path" : "/Users/zhou/Android-SDK/ndk/25.1.8937393/toolchains/llvm/prebuilt/darwin-x86_64/sysroot"
+			}
+		}
+	],
+	"dependencies" : 
+	[
+		{
+			"backtrace" : 2,
+			"id" : "crypto::@5e087315b0c47c225a68"
+		},
+		{
+			"backtrace" : 2,
+			"id" : "curve25519::@3228a5fed5d18076e575"
+		},
+		{
+			"backtrace" : 2,
+			"id" : "ed25519::@f220ed4c304019da0daf"
+		},
+		{
+			"backtrace" : 2,
+			"id" : "playfair::@ab444f4cdd1c1966f2e1"
+		},
+		{
+			"backtrace" : 2,
+			"id" : "plist::@f76e1165758cbc2ea698"
+		},
+		{
+			"backtrace" : 2,
+			"id" : "fdk-aac::@27159c629a177ad6abf4"
+		},
+		{
+			"backtrace" : 2,
+			"id" : "play-lib::@29bb2252dbea24da8ef9"
+		},
+		{
+			"backtrace" : 2,
+			"id" : "jdns_sd::@ddca2fc873a42f7c0b24"
+		}
+	],
+	"id" : "raop_server::@6890427a1f51a3e7e1df",
+	"link" : 
+	{
+		"commandFragments" : 
+		[
+			{
+				"fragment" : "-static-libstdc++ -Wl,--build-id=sha1 -Wl,--no-rosegment -Wl,--fatal-warnings -Wl,--gc-sections -Wl,--no-undefined -Qunused-arguments",
+				"role" : "flags"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "/Users/zhou/Android-SDK/ndk/25.1.8937393/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/arm-linux-androideabi/24/liblog.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "../../../../build/intermediates/cxx/Debug/h6t286c4/obj/armeabi-v7a/libplay-lib.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "../../../../build/intermediates/cxx/Debug/h6t286c4/obj/armeabi-v7a/libjdns_sd.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "src/main/cpp/lib/ed25519/libed25519.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "../../../../build/intermediates/cxx/Debug/h6t286c4/obj/armeabi-v7a/libfdk-aac.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "/Users/zhou/Android-SDK/ndk/25.1.8937393/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/arm-linux-androideabi/24/liblog.so",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "src/main/cpp/lib/crypto/libcrypto.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "src/main/cpp/lib/curve25519/libcurve25519.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "src/main/cpp/lib/playfair/libplayfair.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "src/main/cpp/lib/plist/libplist.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "-latomic -lm",
+				"role" : "libraries"
+			}
+		],
+		"language" : "CXX",
+		"sysroot" : 
+		{
+			"path" : "/Users/zhou/Android-SDK/ndk/25.1.8937393/toolchains/llvm/prebuilt/darwin-x86_64/sysroot"
+		}
+	},
+	"name" : "raop_server",
+	"nameOnDisk" : "libraop_server.so",
+	"paths" : 
+	{
+		"build" : ".",
+		"source" : "."
+	},
+	"sourceGroups" : 
+	[
+		{
+			"name" : "Source Files",
+			"sourceIndexes" : 
+			[
+				0
+			]
+		}
+	],
+	"sources" : 
+	[
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "src/main/cpp/jni_raop_server.cpp",
+			"sourceGroupIndex" : 0
+		}
+	],
+	"type" : "SHARED_LIBRARY"
+}

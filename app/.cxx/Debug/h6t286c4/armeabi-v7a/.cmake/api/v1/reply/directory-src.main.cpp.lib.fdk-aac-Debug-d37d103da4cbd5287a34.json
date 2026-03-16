@@ -1,0 +1,14 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : [],
+		"files" : [],
+		"nodes" : []
+	},
+	"installers" : [],
+	"paths" : 
+	{
+		"build" : "src/main/cpp/lib/fdk-aac",
+		"source" : "src/main/cpp/lib/fdk-aac"
+	}
+}

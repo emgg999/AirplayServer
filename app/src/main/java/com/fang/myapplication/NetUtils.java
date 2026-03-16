@@ -10,18 +10,15 @@ public class NetUtils {
         try {
             List<NetworkInterface> all = Collections.list(NetworkInterface.getNetworkInterfaces());
             for (NetworkInterface nif : all) {
-                if (!nif.getName().equalsIgnoreCase("wlan0")) continue;
-
+                if (!nif.getName().equalsIgnoreCase("rndis0")) continue;
                 byte[] macBytes = nif.getHardwareAddress();
                 if (macBytes == null) {
                     return "";
                 }
-
                 StringBuilder res1 = new StringBuilder();
                 for (byte b : macBytes) {
                     res1.append(String.format("%02X:", b));
                 }
-
                 if (res1.length() > 0) {
                     res1.deleteCharAt(res1.length() - 1);
                 }
@@ -32,6 +29,4 @@ public class NetUtils {
         }
         return "00:00:00:00:00:00";
     }
-
-
 }

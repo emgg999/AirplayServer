@@ -1,0 +1,263 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8
+					],
+					"jsonFile" : "directory-.-Debug-f5ebdc15457944623624.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.4.1"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						8
+					]
+				},
+				{
+					"build" : "src/main/cpp/lib/crypto",
+					"jsonFile" : "directory-src.main.cpp.lib.crypto-Debug-7ee7db857d2a5ef22473.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.4.1"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "src/main/cpp/lib/crypto",
+					"targetIndexes" : 
+					[
+						0
+					]
+				},
+				{
+					"build" : "src/main/cpp/lib/curve25519",
+					"jsonFile" : "directory-src.main.cpp.lib.curve25519-Debug-6ce826c171e8df1c0958.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.4.1"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "src/main/cpp/lib/curve25519",
+					"targetIndexes" : 
+					[
+						1
+					]
+				},
+				{
+					"build" : "src/main/cpp/lib/ed25519",
+					"jsonFile" : "directory-src.main.cpp.lib.ed25519-Debug-9316d8ba483b3370ceb8.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.4.1"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "src/main/cpp/lib/ed25519",
+					"targetIndexes" : 
+					[
+						2
+					]
+				},
+				{
+					"build" : "src/main/cpp/lib/playfair",
+					"jsonFile" : "directory-src.main.cpp.lib.playfair-Debug-66166dd14b1aa535afbf.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.4.1"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "src/main/cpp/lib/playfair",
+					"targetIndexes" : 
+					[
+						6
+					]
+				},
+				{
+					"build" : "src/main/cpp/lib/plist",
+					"jsonFile" : "directory-src.main.cpp.lib.plist-Debug-e51161aee0919c8c76ba.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.4.1"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "src/main/cpp/lib/plist",
+					"targetIndexes" : 
+					[
+						7
+					]
+				},
+				{
+					"build" : "src/main/cpp/lib/fdk-aac",
+					"jsonFile" : "directory-src.main.cpp.lib.fdk-aac-Debug-d37d103da4cbd5287a34.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.4.1"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "src/main/cpp/lib/fdk-aac",
+					"targetIndexes" : 
+					[
+						3
+					]
+				},
+				{
+					"build" : "src/main/cpp/lib",
+					"jsonFile" : "directory-src.main.cpp.lib-Debug-ecd52e61657b6e5fd018.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.4.1"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "src/main/cpp/lib",
+					"targetIndexes" : 
+					[
+						5
+					]
+				},
+				{
+					"build" : "src/main/cpp/mDNSResponder",
+					"jsonFile" : "directory-src.main.cpp.mDNSResponder-Debug-838ab195e1a28129e481.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.4.1"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "src/main/cpp/mDNSResponder",
+					"targetIndexes" : 
+					[
+						4
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8
+					],
+					"name" : "Project",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 1,
+					"id" : "crypto::@5e087315b0c47c225a68",
+					"jsonFile" : "target-crypto-Debug-e83c102eea6b95b548a7.json",
+					"name" : "crypto",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "curve25519::@3228a5fed5d18076e575",
+					"jsonFile" : "target-curve25519-Debug-0fbd584f3949a5b55961.json",
+					"name" : "curve25519",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 3,
+					"id" : "ed25519::@f220ed4c304019da0daf",
+					"jsonFile" : "target-ed25519-Debug-e7fd7dc558be920f4908.json",
+					"name" : "ed25519",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 6,
+					"id" : "fdk-aac::@27159c629a177ad6abf4",
+					"jsonFile" : "target-fdk-aac-Debug-5605ce87a383dd3f73a1.json",
+					"name" : "fdk-aac",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 8,
+					"id" : "jdns_sd::@ddca2fc873a42f7c0b24",
+					"jsonFile" : "target-jdns_sd-Debug-75a36afeb02afb455d55.json",
+					"name" : "jdns_sd",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 7,
+					"id" : "play-lib::@29bb2252dbea24da8ef9",
+					"jsonFile" : "target-play-lib-Debug-f0632504afac52aa8ebc.json",
+					"name" : "play-lib",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 4,
+					"id" : "playfair::@ab444f4cdd1c1966f2e1",
+					"jsonFile" : "target-playfair-Debug-998faaa2450717408b8b.json",
+					"name" : "playfair",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 5,
+					"id" : "plist::@f76e1165758cbc2ea698",
+					"jsonFile" : "target-plist-Debug-56dd917bbace92cfd699.json",
+					"name" : "plist",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "raop_server::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-raop_server-Debug-7bb8db87d8bb7f7d640f.json",
+					"name" : "raop_server",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/Users/zhou/Desktop/AirplayServer/app/.cxx/Debug/h6t286c4/armeabi-v7a",
+		"source" : "/Users/zhou/Desktop/AirplayServer/app"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 3
+	}
+}
